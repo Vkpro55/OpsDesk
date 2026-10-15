@@ -1,6 +1,6 @@
 # Project Memory
 
-Running state of the project across chats. **Update at the end of every session.**
+Reasoning and state that code/git can't show. **Update only per the trigger table in `CLAUDE.md` — never to log actions.**
 
 ## Current focus
 

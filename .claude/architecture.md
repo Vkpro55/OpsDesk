@@ -22,7 +22,7 @@ _Living document. Reflects the **intended** design until code exists; then it mu
         │        • BullMQ queues          │
         │                                 ▼
  ┌──────┴────────────────────────────────────┐
- │ Worker process (BullMQ workers+schedulers)│  ← same codebase, `server/worker.js`
+ │ Worker process (BullMQ workers+schedulers)│  ← same codebase, `backend/worker.js`
  │  emits socket events via @socket.io/       │
  │  redis-emitter (no HTTP server)           │
  └───────────────────────────────────────────┘
@@ -86,7 +86,7 @@ Filter combos beyond these → verify with explain() and add/adjust; record in A
 5. **Accept invite** — create Membership + consume invite.
 6. **Create ticket** — allocate ticket number (counter) + ticket + first event.
 
-Transaction helper: `withTransaction(fn)` in `server/utils/db.js` using `session.withTransaction` (handles retries on TransientTransactionError).
+Transaction helper: `withTransaction(fn)` in `backend/utils/db.js` using `session.withTransaction` (handles retries on TransientTransactionError).
 
 ## Socket.io
 
@@ -127,7 +127,7 @@ Defaults: `attempts: 5`, `backoff: { type: 'exponential', delay: 2000 }`. On fin
 opsdesk/
 ├── client/                 # Next.js App Router, TS, Tailwind
 │   ├── app/  components/  hooks/useSocket.ts  lib/socket.ts  lib/api.ts
-├── server/
+├── backend/                # package.json (ESM, Node >=24)
 │   ├── app.js  server.js  worker.js  config.js
 │   ├── models/  routes/v1/  controllers/  services/  validators/
 │   ├── middleware/ auth.js tenancy.js rbac.js rateLimit.js validate.js error.js requestContext.js

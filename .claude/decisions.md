@@ -35,11 +35,11 @@ Template:
 
 ## ADR-004: Validation with zod
 - Date: 2026-10-15 · Status: Proposed
-- Decision: zod schemas per route in `server/validators/`; one `validate({ body, query, params })` middleware. Same schemas reused for socket event payloads.
+- Decision: zod schemas per route in `backend/validators/`; one `validate({ body, query, params })` middleware. Same schemas reused for socket event payloads.
 
 ## ADR-005: Separate worker process
 - Date: 2026-10-15 · Status: Proposed
-- Decision: `server/worker.js` runs BullMQ workers + job schedulers; API never processes jobs. Worker emits socket events via `@socket.io/redis-emitter`.
+- Decision: `backend/worker.js` runs BullMQ workers + job schedulers; API never processes jobs. Worker emits socket events via `@socket.io/redis-emitter`.
 - Consequences: two deploy targets for backend; graceful shutdown implemented in both.
 
 ## ADR-006: Auth tokens

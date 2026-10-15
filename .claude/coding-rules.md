@@ -51,7 +51,7 @@ Every change must satisfy these. If a rule blocks you, raise it — don't quietl
 1. Server: ESM (`import`), async/await, no callbacks. Client: TS strict, App Router conventions, Tailwind only (no CSS-in-JS).
 2. Small focused modules; no premature abstractions (no interfaces/factories with one implementation).
 3. Names: files `camelCase.js`, React components `PascalCase.tsx`, constants `UPPER_SNAKE`, Mongo fields `camelCase`.
-4. Config only from `server/config.js` (validated with zod at boot — fail fast on missing env). No `process.env` elsewhere.
+4. Config only from `backend/config.js` (validated with zod at boot — fail fast on missing env). No `process.env` elsewhere.
 5. Log with the context logger (`logger.info({ ticketId }, 'msg')`), never `console.log`.
 6. Prettier + ESLint must pass. No commented-out code; deliberate shortcuts get a `ponytail:` comment naming the limit and upgrade path.
 7. Prefer stdlib/native and already-installed deps before adding a package. A new dependency needs a one-line justification (in the PR or ADR).
