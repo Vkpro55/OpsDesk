@@ -1,47 +1,60 @@
-# OpsDesk — Claude Instructions
+# OpsDesk
+Multi-tenant support & ticketing platform: real-time chat, SLA tracking, background jobs.
+Graded on correctness of isolation, real-time, jobs and SLA - not on feature count.
 
-Multi-tenant real-time support & ticketing platform (graded project, 100 marks, 50–65h budget).
-Next.js client + Express/Socket.io server + MongoDB replica set + Redis + BullMQ.
-
-## Context files (loaded every session)
-
-@.claude/knowledge.md
-@.claude/architecture.md
-@.claude/decisions.md
-@.claude/coding-rules.md
-@.claude/git-rules.md
-@.claude/memory.md
-
-**Default: a prompt updates NO context file.** Touch a file only when its trigger below fires.
-Mechanical work — init, install, scaffold, rename, move, format, routine code — never triggers anything; git history already records it.
-
-| File | Update only when | Never for |
-|------|------------------|-----------|
-| `knowledge.md` | A requirement is clarified, added, or changed | How we build it |
-| `architecture.md` | System shape changes: new collection, room, queue, process, or service boundary | Package setup, file moves, folder tweaks |
-| `decisions.md` | A choice between real alternatives with trade-offs (hosting, Redis provider, sync strategy) — record chosen, rejected, why | Defaults with no real alternative, obvious next steps |
-| `coding-rules.md` | A new convention all future code must follow is agreed | One-off fixes |
-| `git-rules.md` | A new scope or git convention is agreed | Individual commits |
-| `memory.md` | Reasoning derived in chat that code/git can't show: a phase fully done, an open question raised/resolved, a direction change, something ruled out or blocked | Logging actions ("initialised X", "added file Y") |
-
-## Session protocol
-
-1. **Start:** read `memory.md` → "Current focus" and "Open questions" before doing anything.
-2. **During:** apply the trigger table above. Never silently contradict an `Accepted` ADR — propose a superseding one and ask.
-3. **After any change git would see:** end the reply with a `📦 Suggested commit` block (format in `git-rules.md`). Suggest only; don't commit unless asked.
-4. **Session log:** at most one entry per working session, only if something in the `memory.md` row happened. Record reasoning, not actions.
-   - ✅ "Chose Railway over Render: Render free Redis evicts keys, breaks BullMQ."
-   - ❌ "Initialised backend/package.json."
-5. Dates are absolute (`YYYY-MM-DD`), never "yesterday" / "last week".
-
-## Non-negotiables (details in coding-rules.md)
-
-- Tenant isolation lives in the **query layer** (Mongoose tenancy plugin + AsyncLocalStorage). Never rely on a controller remembering `orgId`.
-- A customer socket must **never** receive an internal-note event. Internal notes go only to the `ticket:<id>:internal` room.
-- Ticket status changes go through the state machine in `backend/services/ticketStateMachine.js` — never set `status` directly.
-- Multi-document writes that must be consistent use a Mongo transaction (list in `architecture.md`).
-- Every endpoint: auth → tenancy → rbac → rate limit → zod validation. Errors use the standard `{ error: { code, message, details, requestId } }` shape.
+## Stack
+- client/: React + TypeScript (Vite), Tailwind, Socket.io client
+- server/: Node + Express, Socket.io, MongoDB + Mongoose (replica set), Redis, BullMQ
+- Auth: JWT access + refresh tokens (stored in Redis) + Google OAuth
 
 ## Commands
+- Up (Mongo replica set + Redis): `docker compose up -d`
+- Client: `cd client && npm run dev` | Server: `cd server && npm run dev`
+- Test: `npm test` | Lint: `npm run lint` | Typecheck (client): `npm run typecheck`
+- Seed: `npm run seed` (3 orgs, all 4 roles, 1,000+ tickets; `--large` for 100k)
 
-_To be filled in once scaffolding exists (dev, test, lint, seed, worker)._
+## Map
+- server/middleware/tenancy.js - sets orgId in request context. The most critical file.
+- server/services/ - business logic lives here, not in controllers
+- server/services/sla.js - ALL business-hours/SLA time math
+- server/sockets/ - auth.js (handshake), rooms.js (join permission checks), handlers/
+- server/jobs/ - scheduled/ (cron), queued/ (producers), processors/ (workers)
+- client/src/hooks/useSocket.ts + lib/socket.ts - the only place sockets are created
+
+## Invariants (never break these)
+- **Tenancy:** orgId comes only from the auth context, never from req.body/params/query.
+  Every tenant-scoped model uses the tenant plugin, so queries are org-scoped automatically.
+  Aggregations must start with `$match: { orgId }`. Redis cache keys must include orgId.
+  Why: one missed filter leaks another org's data - that is the worst bug this app can have.
+- **Sockets:** unauthenticated sockets join nothing. Join a room only after a server-side permission check.
+  Internal notes go only to the agents room (`ticket:<id>:agents`), never the ticket room customers are in.
+- **Ticket status:** change it only through the state machine in services. Never set `status` directly.
+- **Transactions:** required for ticket merge, assignment + load counter update, org creation + owner.
+  Any new multi-document write that must be all-or-nothing gets one too.
+- **Side effects** (email, webhooks, reports, attachments) go through a queue, never inline in a request.
+  Processors must be idempotent - retries will run them more than once. Every job payload carries orgId.
+- **Time:** store UTC; convert using the org's timezone only inside sla.js.
+
+## Conventions
+- API lives under `/api/v1`. Never change a v1 response shape; breaking changes go to v2.
+- Validate every request body/params/query with zod.
+- Errors: `{ error: { code: "MACHINE_CODE", message, details? } }` via the central error handler.
+- Logging: use the logger (JSON, carries requestId). No `console.log`.
+- New filter or sort → compound index with orgId first. Check it with explain() (no COLLSCAN).
+
+## Testing
+- Every new tenant-scoped model/route gets a cross-org leak test (Org A user cannot read Org B data).
+- For bugs: write a failing test that reproduces it before fixing.
+
+## Read when relevant
+- Adding/changing a socket event → docs/socket-events.md (update it in the same change)
+- Touching tenancy, auth or queries → docs/tenancy-strategy.md
+- New or changed endpoint → docs/api.md
+- CI/CD, env vars, health checks, shutdown → docs/deployment.md
+
+## Workflow
+- Plan: `/grill-me` → `/to-spec` → `/to-tickets` (tickets in `.tickets/`, format in `docs/agents/issue-tracker.md`).
+- Build: `/build-with-me` on one ticket; I write the code.
+- Review: `/code-review`, then fix findings and explain each fix.
+- Record agreed decisions with `decision-log` (D-NNN); specs cite IDs.
+- Bug found mid-work: write a `bug` ticket directly in `.tickets/`. Domain docs: `docs/agents/domain.md`.
