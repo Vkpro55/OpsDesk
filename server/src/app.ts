@@ -1,6 +1,7 @@
 import express from 'express';
 import { errorHandler, notFound } from './middleware/error.js';
 import { requestContext } from './middleware/requestContext.js';
+import { healthRouter } from './routes/health.js';
 
 const app = express();
 app.use(requestContext);
@@ -9,6 +10,7 @@ app.use(requestContext);
 app.use(express.json());
 
 // routes mount here
+app.use('/api/v1', healthRouter);
 
 app.use(notFound);
 
