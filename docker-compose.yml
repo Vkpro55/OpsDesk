@@ -43,6 +43,35 @@ services:
       timeout: 10s
       retries: 5
 
+  server:
+    image: vinod057/opsdesk-server:latest
+    build: ./server
+    container_name: server
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGO_URL: mongodb://admin:password123@mongo:27017/opsdesk?authSource=admin&directConnection=true
+      REDIS_HOST: redis
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    stop_grace_period: 30s
+
+  client:
+    image: vinod057/opsdesk-client:latest
+    build: ./client
+    container_name: client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+  
 volumes:
   opsdesk-mongodbdata:
   redis-data:
