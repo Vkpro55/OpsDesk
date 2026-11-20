@@ -12,14 +12,21 @@ app.use(requestContext, express.json());
 app.get('/t/app-error', () => {
   throw new AppError('TICKET_NOT_FOUND', 404, 'nope');
 });
-app.post('/t/validate', validate({ body: z.object({ n: z.number() }) }), (req, res) => res.json(req.body));
+app.post(
+  '/t/validate',
+  validate({ body: z.object({ n: z.number() }) }),
+  (req, res) => res.json(req.body),
+);
 app.use(notFound);
 app.use(errorHandler);
 
 it('unknown route -> 404 standard shape with requestId', async () => {
   const res = await request(app).get('/nope');
   expect(res.status).toBe(404);
-  expect(res.body.error).toMatchObject({ code: 'ROUTE_NOT_FOUND', requestId: res.headers['x-request-id'] });
+  expect(res.body.error).toMatchObject({
+    code: 'ROUTE_NOT_FOUND',
+    requestId: res.headers['x-request-id'],
+  });
 });
 
 it('AppError renders its code/status', async () => {

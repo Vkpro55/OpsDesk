@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 const healthRouter = Router();
 
 healthRouter.get('/health/live', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 healthRouter.get('/health/ready', readinessHandler(mongoose.connection, redis));
