@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 export interface Ctx {
   requestId: string;
+  orgId?: string;
 }
 
 // Store follows the request through nested calls, timers and callbacks.
