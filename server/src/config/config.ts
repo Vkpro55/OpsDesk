@@ -9,6 +9,7 @@ export const config: Readonly<{
   clientUrl: string;
   redisHost: string;
   redisPort: number;
+  googleClientId: string;
 }> = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 4000),
@@ -17,4 +18,5 @@ export const config: Readonly<{
   clientUrl: process.env.CLIENT_URL ?? 'http://localhost:5173',
   redisHost: process.env.REDIS_HOST ?? 'localhost',
   redisPort: Number(process.env.REDIS_PORT ?? 6379),
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
 };

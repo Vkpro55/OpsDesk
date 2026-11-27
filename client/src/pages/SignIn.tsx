@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
 import { AuthLayout } from '../components/AuthLayout'
+import { GoogleButton } from '../components/GoogleButton'
 import { Button } from '../components/ui/Button'
+import { Divider } from '../components/ui/Divider'
 import { FormError } from '../components/ui/FormError'
 import { Input } from '../components/ui/Input'
 import { signIn } from '../features/auth/actions'
 import { useAuthForm } from '../features/auth/useAuthForm'
 
 export function SignIn() {
-  const [state, action, pending] = useAuthForm(signIn)
+  const { state, action, pending, formRef, onGoogleCredential } = useAuthForm(signIn)
 
   return (
     <AuthLayout
@@ -19,8 +21,10 @@ export function SignIn() {
         </>
       }
     >
-      <form action={action} className="flex flex-col gap-4">
+      <form ref={formRef} action={action} className="flex flex-col gap-4">
         <FormError message={state.formError} />
+        <GoogleButton text="continue_with" onCredential={onGoogleCredential} />
+        <Divider label="or" />
         <Input
           label="Work email"
           name="email"

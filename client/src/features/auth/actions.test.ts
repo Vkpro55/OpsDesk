@@ -29,6 +29,28 @@ it('signUp puts EMAIL_TAKEN under email and never echoes the password', async ()
   expect(state.values).toEqual({ orgName: 'Acme', name: 'Ann', email: 'a@x.com' })
 })
 
+it('Google sign-in posts only the ID token', async () => {
+  respond(200, { accessToken: 't' })
+  await signIn(form({ idToken: 'gid', email: '', password: '' }))
+  expect(fetch).toHaveBeenCalledWith(
+    '/api/v1/auth/google',
+    expect.objectContaining({ body: JSON.stringify({ idToken: 'gid' }) }),
+  )
+})
+
+it('Google sign-up needs an org name before calling the server', async () => {
+  respond(201, {})
+  const state = await signUp(form({ idToken: 'gid', orgName: ' ' }))
+  expect(state.fieldErrors.orgName).toMatch(/organization name/)
+  expect(fetch).not.toHaveBeenCalled()
+
+  await signUp(form({ idToken: 'gid', orgName: 'Acme' }))
+  expect(fetch).toHaveBeenCalledWith(
+    '/api/v1/auth/google',
+    expect.objectContaining({ body: JSON.stringify({ idToken: 'gid', orgName: 'Acme' }) }),
+  )
+})
+
 it('network failure becomes a form error', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
   const state = await signIn(form({ email: 'a@x.com', password: 'x' }))

@@ -18,14 +18,26 @@ afterAll(async () => {
 
 it('creates one of each, applies defaults, and rejects a duplicate membership', async () => {
   const org = await Organization.create({ name: 'Acme', slug: 'Acme' });
-  const user = await User.create({ email: 'A@X.com', name: 'Ann', passwordHash: 'secret' });
-  const m = await Membership.create({ orgId: org._id, userId: user._id, role: 'agent' });
+  const user = await User.create({
+    email: 'A@X.com',
+    name: 'Ann',
+    passwordHash: 'secret',
+  });
+  const m = await Membership.create({
+    orgId: org._id,
+    userId: user._id,
+    role: 'agent',
+  });
 
   expect(org.slug).toBe('acme');
   expect(org.settings.autoAssignMode).toBe('off');
   expect(org.settings.slaPolicies).toHaveLength(4);
   expect(m.openTicketCount).toBe(0);
-  expect(user.toPublic()).toEqual({ id: user.id, email: 'a@x.com', name: 'Ann' });
+  expect(user.toPublic()).toEqual({
+    id: user.id,
+    email: 'a@x.com',
+    name: 'Ann',
+  });
 
   await expect(
     Membership.create({ orgId: org._id, userId: user._id, role: 'customer' }),

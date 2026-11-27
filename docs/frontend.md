@@ -17,6 +17,7 @@ Read before any change in `client/`. Agreed 2026-11-27.
 
 ## Code rules
 - Pure React. No UI/form/class libraries (no shadcn, react-hook-form, clsx). `react-router-dom` is allowed. Dev-only: `vitest`.
+- One exception: Google Identity Services script, loaded on demand by `lib/googleIdentity.ts` (no npm package). Google renders its own button (branding rules), so it can't use our `Button`. No `VITE_GOOGLE_CLIENT_ID` → the button hides.
 - Repeated class strings belong in a component, not in tokens.
 - Layers:
   - `lib/` pure functions (`api.ts` fetch wrapper → `ApiError`; `formErrors.ts` error → form state; `cn.ts`).
@@ -29,6 +30,7 @@ Read before any change in `client/`. Agreed 2026-11-27.
 - Errors: API `{ error: { code, message, details } }`. Field errors from zod `details[].path[0]`, plus code→field map in `formErrors.ts` (e.g. `EMAIL_TAKEN`→email). Anything else → `<FormError>`.
 - Accessibility: every input has a label, `aria-invalid` + `aria-describedby` on error, `role="alert"` on form errors, inputs at 16px font (no iOS zoom), touch targets ≥40px.
 - Add only components/variants the current screen uses. No Storybook, no generic Form abstraction.
-- Not built yet → hide it (no dead buttons): Google sign-in, forgot password.
+- Not built yet → hide it (no dead buttons): forgot password, "Join with Google" on invite (until the invite screen exists).
+- Non-form submits (e.g. Google credential) go through the same `useActionState` action: build `FormData` from the form ref, add the extra field, dispatch inside `startTransition`. One state, one pending flag.
 - Tests: vitest on pure logic (`lib/`, `features/*/actions`), stub `fetch`. No render tests unless asked.
 - Dev API: Vite proxies `/api` → `http://localhost:4000` (same origin, so the refresh cookie works).

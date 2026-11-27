@@ -14,5 +14,5 @@ export const connectDB = async () => {
 mongoose.set('transactionAsyncLocalStorage', true);
 
 export const withTransaction = <T>(
-  fn: (session: ClientSession) => Promise<T>
+  fn: (session: ClientSession) => Promise<T>,
 ): Promise<T> => mongoose.connection.transaction(fn);

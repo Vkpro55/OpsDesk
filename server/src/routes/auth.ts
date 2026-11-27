@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate.js';
-import { login, signup } from '../services/auth.js';
+import { googleAuth, login, signup } from '../services/auth.js';
 import {
   issueRefreshToken,
   REFRESH_TTL_SECONDS,
@@ -13,8 +13,10 @@ import { AppError } from '../utils/errors.js';
 
 const email = z.string().trim().toLowerCase().pipe(z.email());
 
+const orgName = z.string().trim().min(2).max(80);
+
 const signupBody = z.object({
-  orgName: z.string().trim().min(2).max(80),
+  orgName,
   name: z.string().trim().min(1).max(80),
   email,
   password: z.string().min(8).max(128),
@@ -24,6 +26,11 @@ const loginBody = z.object({
   email,
   password: z.string().min(1).max(128),
   orgSlug: z.string().trim().toLowerCase().optional(),
+});
+
+const googleBody = z.object({
+  idToken: z.string().min(1).max(4096),
+  orgName: orgName.optional(),
 });
 
 const COOKIE = 'rt';
@@ -64,6 +71,15 @@ authRouter.post('/signup', validate({ body: signupBody }), async (req, res) => {
 authRouter.post('/login', validate({ body: loginBody }), async (req, res) => {
   const { email, password, orgSlug } = req.body;
   await startSession(res, 200, await login(email, password, orgSlug));
+});
+
+authRouter.post('/google', validate({ body: googleBody }), async (req, res) => {
+  const { idToken, orgName } = req.body;
+  await startSession(
+    res,
+    orgName ? 201 : 200,
+    await googleAuth(idToken, orgName),
+  );
 });
 
 authRouter.post('/refresh', async (req, res) => {

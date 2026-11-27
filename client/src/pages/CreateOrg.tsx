@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
 import { AuthLayout } from '../components/AuthLayout'
+import { GoogleButton } from '../components/GoogleButton'
 import { Button } from '../components/ui/Button'
+import { Divider } from '../components/ui/Divider'
 import { FormError } from '../components/ui/FormError'
 import { Input } from '../components/ui/Input'
 import { signUp } from '../features/auth/actions'
 import { useAuthForm } from '../features/auth/useAuthForm'
 
 export function CreateOrg() {
-  const [state, action, pending] = useAuthForm(signUp)
+  const { state, action, pending, formRef, onGoogleCredential } = useAuthForm(signUp)
   const { values, fieldErrors } = state
 
   return (
@@ -21,8 +23,10 @@ export function CreateOrg() {
         </>
       }
     >
-      <form action={action} className="flex flex-col gap-4">
+      <form ref={formRef} action={action} className="flex flex-col gap-4">
         <FormError message={state.formError} />
+        <GoogleButton text="signup_with" onCredential={onGoogleCredential} />
+        <Divider label="or" />
         <Input
           label="Organization name"
           name="orgName"
