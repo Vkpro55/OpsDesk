@@ -11,11 +11,9 @@ export const connectDB = async () => {
   }
 };
 
-// Auto-attaches the active transaction's session to every operation inside the callback,
-// so a forgotten `{ session }` can't silently write outside the transaction.
+// Forgotten { session } can't escape transaction.
 mongoose.set('transactionAsyncLocalStorage', true);
 
-// Retries on transient conflicts and always ends the session.
 export const withTransaction = <T>(
   fn: (session: ClientSession) => Promise<T>
 ): Promise<T> => mongoose.connection.transaction(fn);

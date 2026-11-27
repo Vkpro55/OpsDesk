@@ -6,7 +6,6 @@ export interface Ctx {
   orgId?: string;
 }
 
-// Store follows the request through nested calls, timers and callbacks.
 export const asyncLocalStorage = new AsyncLocalStorage<Ctx>();
 export const getContext = () => asyncLocalStorage.getStore();
 

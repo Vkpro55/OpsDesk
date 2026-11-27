@@ -22,7 +22,6 @@ async function shutdown(server: Server, signal: NodeJS.Signals) {
     }
   });
 
-  // Close idle connections immediately
   server.closeIdleConnections();
 }
 

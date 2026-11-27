@@ -8,7 +8,6 @@ export const logger = pino({
   level: isDev ? 'debug' : 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
 
-  // Never log secrets
   redact: [
     'req.headers.authorization',
     'req.headers.cookie',
@@ -16,10 +15,8 @@ export const logger = pino({
     '*.token',
   ],
 
-  // Runs on every log call: auto-adds requestId/userId from ALS
   mixin: () => getContext() ?? {},
 
-  // Every log is appended as one JSON line to logs/app.log, plus the terminal
   transport: {
     targets: [
       isDev

@@ -47,6 +47,7 @@ const organizationSchema = new Schema(
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     settings: { type: settingsSchema, default: () => ({}) },
     plan: { type: String, enum: PLANS, default: 'free' },
+    nextTicketNumber: { type: Number, default: 1000 },
   },
   { timestamps: true },
 );

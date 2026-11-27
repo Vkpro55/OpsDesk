@@ -15,13 +15,12 @@ export function validate(schemas: Schemas) {
   ) {
     try {
       if (schemas.body) {
-        // parse() throws a ZodError if the data is wrong, otherwise returns the clean data
         req.body = schemas.body.parse(req.body);
       }
 
       if (schemas.query) {
         const cleanQuery = schemas.query.parse(req.query);
-        // Express 5 makes req.query read-only, so we replace the property instead of assigning
+        // Express 5 req.query is read-only.
         Object.defineProperty(req, 'query', {
           value: cleanQuery,
           writable: true,
@@ -34,7 +33,6 @@ export function validate(schemas: Schemas) {
 
       next();
     } catch (err) {
-      // Hand the error to errorHandler, which turns a ZodError into 400 VALIDATION_ERROR
       next(err);
     }
   };
