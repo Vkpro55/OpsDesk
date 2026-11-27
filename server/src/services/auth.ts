@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+﻿import { randomBytes } from 'node:crypto';
 import { mongo } from 'mongoose';
 import { Membership } from '../models/membership.js';
 import { Organization } from '../models/organization.js';
@@ -51,7 +51,7 @@ export async function signup(input: SignupInput) {
     });
   } catch (err) {
     if (isDuplicateKey(err, 'email'))
-      throw new AppError('EMAIL_TAKEN', 409, 'Email is already registered');
+      throw new AppError('EMAIL_TAKEN', 409, 'This email already has an account.');
     throw err;
   }
 }
@@ -66,7 +66,7 @@ export async function login(email: string, password: string, orgSlug?: string) {
     user?.passwordHash ?? (await dummyHash),
   );
   if (!user || !ok)
-    throw new AppError('INVALID_CREDENTIALS', 401, 'Invalid email or password');
+    throw new AppError('INVALID_CREDENTIALS', 401, "That email and password don't match.");
 
   const filter: Record<string, unknown> = {
     userId: user._id,

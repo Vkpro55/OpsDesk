@@ -47,6 +47,7 @@ Graded on correctness of isolation, real-time, jobs and SLA - not on feature cou
 - For bugs: write a failing test that reproduces it before fixing.
 
 ## Read when relevant
+- ANY change in client/ → docs/frontend.md first (design tokens, layering, form rules). Always.
 - Adding/changing a socket event → docs/socket-events.md (update it in the same change)
 - Touching tenancy, auth or queries → docs/tenancy-strategy.md
 - New or changed endpoint → docs/api.md
