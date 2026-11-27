@@ -5,7 +5,7 @@ import { Organization } from '../models/organization.js';
 import { User } from '../models/user.js';
 import { withTransaction } from '../utils/db.js';
 import { AppError } from '../utils/errors.js';
-import { hashPassword } from '../utils/password.js';
+import { hashPassword, verifyPassword } from '../utils/password.js';
 
 export interface SignupInput {
   orgName: string;
@@ -59,4 +59,38 @@ export async function signup(input: SignupInput) {
       throw new AppError('EMAIL_TAKEN', 409, 'Email is already registered');
     throw err;
   }
+}
+
+let dummyHash: Promise<string> | undefined;
+
+export async function login(email: string, password: string, orgSlug?: string) {
+  const user = await User.findOne({ email }).select('+passwordHash');
+  dummyHash ??= hashPassword('dummy-password');
+  // Equal timing hides which emails exist.
+  const ok = await verifyPassword(
+    password,
+    user?.passwordHash ?? (await dummyHash),
+  );
+  if (!user || !ok)
+    throw new AppError('INVALID_CREDENTIALS', 401, 'Invalid email or password');
+
+  const filter: Record<string, unknown> = {
+    userId: user._id,
+    status: 'active',
+  };
+  if (orgSlug)
+    filter.orgId = (await Organization.findOne({ slug: orgSlug }))?._id ?? null;
+  const membership = await Membership.findOne(filter).sort({ createdAt: 1 });
+  const org = membership && (await Organization.findById(membership.orgId));
+  if (!org)
+    throw new AppError(
+      'NO_ORG_ACCESS',
+      403,
+      'No active membership in this organization',
+    );
+
+  return {
+    user: user.toPublic(),
+    org: { id: org.id as string, name: org.name, slug: org.slug },
+  };
 }

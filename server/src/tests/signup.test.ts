@@ -31,6 +31,7 @@ it('creates org, user and owner membership', async () => {
   expect(res.status).toBe(201);
   expect(res.body.user.email).toBe('ann@acme.com');
   expect(res.body.org.slug).toBe('acme-support');
+  expect(res.body.accessToken).toBeTypeOf('string');
 
   const org = await Organization.findById(res.body.org.id);
   expect(org?.nextTicketNumber).toBe(1000);
