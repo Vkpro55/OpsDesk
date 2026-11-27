@@ -1,6 +1,8 @@
 import { Schema, model } from 'mongoose';
 
+// Order matters: rbac ranks by index.
 export const ROLES = ['owner', 'manager', 'agent', 'customer'] as const;
+export type Role = (typeof ROLES)[number];
 export const MEMBERSHIP_STATUSES = ['active', 'invited', 'suspended'] as const;
 
 const membershipSchema = new Schema(

@@ -20,7 +20,7 @@ export function tenantPlugin(schema: Schema): void {
     const update = this.getUpdate() as Record<string, Record<string, unknown>> | null;
     if (!update) return;
     delete update.orgId;
-    delete update.$set?.orgId; // orgId must never change
+    delete update.$set?.orgId;
     delete update.$setOnInsert?.orgId;
   });
 

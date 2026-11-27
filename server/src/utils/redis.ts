@@ -5,7 +5,7 @@ const redis = new Redis({
   host: config.redisHost,
   port: config.redisPort,
   retryStrategy: () => 5000,
-  enableOfflineQueue: false, // Fail fast
+  enableOfflineQueue: false,
 });
 
 redis.on('error', (err) => {

@@ -11,7 +11,6 @@ export const connectDB = async () => {
   }
 };
 
-// Forgotten { session } can't escape transaction.
 mongoose.set('transactionAsyncLocalStorage', true);
 
 export const withTransaction = <T>(

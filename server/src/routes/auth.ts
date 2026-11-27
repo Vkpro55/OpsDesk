@@ -17,7 +17,7 @@ const signupBody = z.object({
   orgName: z.string().trim().min(2).max(80),
   name: z.string().trim().min(1).max(80),
   email,
-  password: z.string().min(8).max(128), // Caps scrypt cost per request.
+  password: z.string().min(8).max(128),
 });
 
 const loginBody = z.object({

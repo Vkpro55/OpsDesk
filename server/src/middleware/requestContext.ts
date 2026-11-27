@@ -1,9 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import type { Role } from '../models/membership.js';
 
 export interface Ctx {
   requestId: string;
   orgId?: string;
+  userId?: string;
+  role?: Role;
 }
 
 export const asyncLocalStorage = new AsyncLocalStorage<Ctx>();

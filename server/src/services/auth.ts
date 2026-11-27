@@ -31,12 +31,10 @@ async function uniqueSlug(name: string): Promise<string> {
 }
 
 export async function signup(input: SignupInput) {
-  // Slow hashing would hold transaction open.
   const passwordHash = await hashPassword(input.password);
   const slug = await uniqueSlug(input.orgName);
 
   try {
-    // Unique index, not pre-check: race-safe.
     return await withTransaction(async () => {
       const org = await Organization.create({ name: input.orgName, slug });
       const user = await User.create({
@@ -49,10 +47,7 @@ export async function signup(input: SignupInput) {
         userId: user._id,
         role: 'owner',
       });
-      return {
-        user: user.toPublic(),
-        org: { id: org.id as string, name: org.name, slug: org.slug },
-      };
+      return { user: user.toPublic(), org: org.toPublic() };
     });
   } catch (err) {
     if (isDuplicateKey(err, 'email'))
@@ -66,7 +61,6 @@ let dummyHash: Promise<string> | undefined;
 export async function login(email: string, password: string, orgSlug?: string) {
   const user = await User.findOne({ email }).select('+passwordHash');
   dummyHash ??= hashPassword('dummy-password');
-  // Equal timing hides which emails exist.
   const ok = await verifyPassword(
     password,
     user?.passwordHash ?? (await dummyHash),
@@ -89,8 +83,5 @@ export async function login(email: string, password: string, orgSlug?: string) {
       'No active membership in this organization',
     );
 
-  return {
-    user: user.toPublic(),
-    org: { id: org.id as string, name: org.name, slug: org.slug },
-  };
+  return { user: user.toPublic(), org: org.toPublic() };
 }

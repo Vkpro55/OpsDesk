@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config.js';
+import { Membership } from '../models/membership.js';
 import { AppError } from '../utils/errors.js';
 import redis from '../utils/redis.js';
 
@@ -51,7 +52,6 @@ export async function rotateRefreshToken(token: string) {
   if (!session) throw invalid();
   if (await redis.exists(`family:${session.familyId}:revoked`)) throw invalid();
 
-  // NX makes concurrent refreshes race-safe.
   const firstUse = await redis.set(
     `refresh:${hash}:used`,
     '1',
@@ -65,6 +65,10 @@ export async function rotateRefreshToken(token: string) {
   }
 
   const { userId, orgId, familyId } = session;
+  if (!(await Membership.exists({ orgId, userId, status: 'active' }))) {
+    await revokeFamily(familyId);
+    throw invalid();
+  }
   return {
     session,
     refreshToken: await issueRefreshToken(userId, orgId, familyId),

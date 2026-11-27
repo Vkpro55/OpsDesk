@@ -1,6 +1,5 @@
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 
-// OWASP params; default maxmem too small.
 // ponytail: params unstored; changing breaks existing hashes.
 const PARAMS = { N: 2 ** 15, r: 8, p: 3, maxmem: 64 * 1024 * 1024 };
 

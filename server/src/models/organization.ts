@@ -1,11 +1,19 @@
 import { Schema, model } from 'mongoose';
 
 export const PLANS = ['free', 'pro', 'enterprise'] as const;
-export const AUTO_ASSIGN_MODES = ['off', 'round_robin', 'least_loaded'] as const;
+export const AUTO_ASSIGN_MODES = [
+  'off',
+  'round_robin',
+  'least_loaded',
+] as const;
 
 const slaPolicySchema = new Schema(
   {
-    priority: { type: String, enum: ['low', 'medium', 'high', 'urgent'], required: true },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high', 'urgent'],
+      required: true,
+    },
     firstResponseMins: { type: Number, required: true },
     resolutionMins: { type: Number, required: true },
   },
@@ -35,7 +43,10 @@ const settingsSchema = new Schema(
         { priority: 'urgent', firstResponseMins: 15, resolutionMins: 480 },
       ],
     },
-    categories: { type: [String], default: ['general', 'billing', 'technical'] },
+    categories: {
+      type: [String],
+      default: ['general', 'billing', 'technical'],
+    },
     autoAssignMode: { type: String, enum: AUTO_ASSIGN_MODES, default: 'off' },
   },
   { _id: false },
@@ -44,12 +55,25 @@ const settingsSchema = new Schema(
 const organizationSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     settings: { type: settingsSchema, default: () => ({}) },
     plan: { type: String, enum: PLANS, default: 'free' },
     nextTicketNumber: { type: Number, default: 1000 },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    methods: {
+      toPublic() {
+        return { id: this.id as string, name: this.name, slug: this.slug };
+      },
+    },
+  },
 );
 
 export const Organization = model('Organization', organizationSchema);
